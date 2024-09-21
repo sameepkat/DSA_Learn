@@ -1,22 +1,16 @@
-public class singly_linked_list {
-  Node next;
+
+class Node {
   int data;
+  Node next;
 
   public Node(int data) {
     this.data = data;
+    this.next = null;
   }
+};
 
-  public void append(int data) {
-    Node current = this;
-    while (current.next != null) {
-      current = current.next;
-    }
-    current.next = new Node(data);
-  }
-}
-
-public static void main(String[] args){
-  Node head;
+public class singly_linked_list {
+  private Node head;
 
   public void append(int data) {
     if (head == null) {
@@ -43,6 +37,7 @@ public static void main(String[] args){
       head = head.next;
       return;
     }
+
     Node current = head;
     while (current.next != null) {
       if (current.next.data == data) {
@@ -52,4 +47,27 @@ public static void main(String[] args){
       current = current.next;
     }
   }
-}
+
+  public void printList() {
+    Node current = head;
+    while (current != null) {
+      System.out.println(current.data + " -> ");
+      current = current.next;
+    }
+    System.out.println("null");
+  }
+
+  public static void main(String[] args) {
+    singly_linked_list list = new singly_linked_list();
+
+    list.append(10);
+    list.append(20);
+    list.append(30);
+    list.append(6);
+    list.printList();
+
+    System.out.println("Deleting");
+    list.deleteWithValue(20);
+    list.printList();
+  }
+};
