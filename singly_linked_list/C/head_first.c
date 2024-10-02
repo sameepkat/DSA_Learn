@@ -18,7 +18,7 @@ void push(int n)
     head = temp;
   }else{
     Node* current = head;
-    while(current->next) // Get to the end node
+    while(current->next) 
     {
       current = current->next;
     }
