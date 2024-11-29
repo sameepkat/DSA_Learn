@@ -1,64 +1,78 @@
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
 
-#define MAX 5
+typedef enum{false, true} bool;
 
-struct Stack{
-  int arr[MAX];
-  int top;
-};
-
-void initStack(struct Stack* stack)
+typedef struct
 {
-  stack->top=-1; 
-}
+	int size, top;
+	int *STACK;
+}stack;
 
-int isEmpty(struct Stack* stack){
-  return stack->top ==-1;
-}
-int isFull(struct Stack* stack){
-  return stack->top==MAX-1;
-}
-void push(struct Stack* stack, int value){
-  if(isFull(stack)){
-    printf("Stack overflow! Cannot push\n");
-  }else{
-    stack->arr[++(stack->top)] = value;
-    printf("Pushed %d to the stack.\n", value);
-  }
-}
-
-int pop(struct Stack* stack){
-  if(isEmpty(stack)){
-    printf("Stack overflow! No elements to pop");
-    return -1;
-  }else{
-    return stack->arr[(stack->top)--];
-  }
-}
-
-int peek(struct Stack* stack){
-  if(isEmpty(stack)){
-    printf("Stack is empty.\n");
-  }else{
-    return stack->arr[stack->top];
-  }
-}
-
-int main(int argc, char *argv[])
+void init(stack* s, int SIZE)
 {
-  struct Stack stack;
-  initStack(&stack);
+	s->size = SIZE;
+	s->STACK = (int*)malloc(sizeof(int));
+	s->top = -1;
+}
 
-  push(&stack, 10);
-  push(&stack, 20);
-  push(&stack, 30);
-  push(&stack, 40);
-  push(&stack, 50);
-  push(&stack, 60);
-  printf("Top element is %d.\n",peek(&stack));
-  printf("Popped element is %d.\n",pop(&stack));
-  printf("Popped element is %d.\n",pop(&stack));
-  printf("Top element after popping is %d.\n",peek(&stack));
-  return EXIT_SUCCESS;
+bool isEmpty(stack* s)
+{
+	if(s->top == -1)
+		return true;
+	else
+		return false;
+}
+
+bool isFull(stack* s)
+{
+	if(s->top == s->size - 1)
+		return true;
+	else
+		return false;
+}
+
+void push(stack* s, int item)
+{
+	if(isFull(s)){
+		perror("Stack overflow\n");
+		exit(1);
+		}
+	else{
+		s->top++;
+		s->STACK[s->top] = item;
+	}
+}
+
+int pop(stack* s)
+{
+	if(isEmpty(s)){
+		perror("Stack underflow\n");
+		exit(1);
+	}
+	else{
+		int item = s->STACK[s->top];
+		s->top--;
+		return item;
+	}
+}
+
+void display(stack* s)
+{
+	printf("Items in the stack: \n");
+	while(s->top!=-1){
+		printf("%d\n",s->STACK[s->top]);
+		s->top--;
+	}
+}
+
+int main()
+{
+	stack s;
+	init(&s, 5);
+	push(&s, 5);
+	push(&s, 2);
+	push(&s, 1);
+	display(&s);
 }
