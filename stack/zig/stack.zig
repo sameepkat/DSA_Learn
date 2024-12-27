@@ -1,55 +1,74 @@
 const std = @import("std");
+const mem = std.mem;
+const log = std.log;
+const heap = std.heap;
+const print = std.debug.print;
 
-const Stack = struct {
-   size: usize,
-   top: isize,
-   STACK: []i32,
-   
-   pub fn init(SIZE: usize) !Stack {
-       const allocator = std.heap.page_allocator;
-       const stack_memory = try allocator.alloc(i32, SIZE);
-       
-       return Stack{
-           .size = SIZE,
-           .top = -1,
-           .STACK = stack_memory,
-       };
-   }
-   
-   pub fn push(self: *Stack, item: i32) void {
-       if (self.top >= @intCast(isize, self.size) - 1) {
-           std.debug.print("Stack overflow\n", .{});
-           return;
-       }
-       self.top += 1;
-       self.STACK[@intCast(usize, self.top)] = item;
-   }
-   
-   pub fn pop(self: *Stack) ?i32 {
-       if (self.top == -1) {
-           std.debug.print("Stack underflow\n", .{});
-           return null;
-       }
-       const item = self.STACK[@intCast(usize, self.top)];
-       self.top -= 1;
-       return item;
-   }
-   
-   pub fn display(self: *Stack) void {
-       std.debug.print("Items in the stack: ", .{});
-       var i: usize = 0;
-       while (i <= @intCast(usize, self.top)) : (i += 1) {
-           std.debug.print("{d} ", .{self.STACK[i]});
-       }
-       std.debug.print("\n", .{});
-   }
-};
+pub fn Stack(comptime T: type) type {
+    return struct {
+        allocator: mem.Allocator,
+        items: []T = &.{},
+        cap: usize = 0,
+
+        const growth_factor = 2;
+
+        const Self = @This();
+
+        pub fn freeAndReset(self: *Self) void {
+            if (self.cap == 0) return;
+            self.allocator.free(self.items.ptr[0..self.cap]);
+            self.items = &.{};
+            self.cap = 0;
+        }
+
+        pub fn push(self: *Self, item: T) !void {
+            if (self.items.len + 1 >= self.cap) try self.grow();
+            self.items.ptr[self.items.len] = item;
+            self.items.len += 1;
+        }
+
+        pub fn pop(self: *Self) ?T {
+            if (self.items.len == 0) return null;
+            self.items.len -= 1;
+            return self.items.ptr[self.items.len];
+        }
+
+        fn grow(self: *Self) !void {
+            const old_len = self.items.len;
+            const new_cap = if (self.cap == 0) 8 else self.cap * growth_factor;
+            self.items = try self.allocator.realloc(self.items.ptr[0..self.cap], new_cap);
+            log.debug("Grew {} -> {}", .{ self.cap, new_cap });
+            self.cap = new_cap;
+            self.items.len = old_len;
+        }
+
+        pub fn format(
+            self: Self,
+            comptime _: []const u8,
+            _: std.fmt.FormatOptions,
+            writer: anytype,
+        ) !void {
+            try writer.writeAll("Stack{ ");
+            for (self.items, 0..) |item, i| {
+                if (i != 0) try writer.writeAll(", ");
+                try writer.print("{}", .{item});
+            }
+
+            try writer.writeAll(" }");
+        }
+    };
+}
 
 pub fn main() !void {
-   var s = try Stack.init(5);
-   std.debug.print("The size of stack is {d}\n", .{s.size});
-   s.push(5);
-   s.push(2);
-   s.push(1);
-   s.display();
+    var gpa = heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var stack = Stack(f32){ .allocator = allocator };
+    defer stack.freeAndReset();
+
+    while (stack.pop()) |item| {
+        print("{}\n", .{item});
+        print("{}\n", .{stack});
+    }
 }

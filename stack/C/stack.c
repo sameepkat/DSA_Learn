@@ -13,7 +13,10 @@ typedef struct
 void init(stack* s, int SIZE)
 {
 	s->size = SIZE;
-	s->STACK = (int*)malloc(sizeof(int));
+	s->STACK = (int*)malloc(SIZE * sizeof(int));
+	if(s->STACK == NULL){
+		perror("Memory allocation failed.");
+	}
 	s->top = -1;
 }
 
@@ -61,10 +64,16 @@ int pop(stack* s)
 void display(stack* s)
 {
 	printf("Items in the stack: \n");
-	while(s->top!=-1){
-		printf("%d\n",s->STACK[s->top]);
-		s->top--;
+	int i = s->top;
+	while(i!=-1){
+		printf("%d\n",s->STACK[i]);
+		i--;
 	}
+}
+
+void destroy(stack* s)
+{
+	free(s->STACK);
 }
 
 int main()
@@ -75,4 +84,5 @@ int main()
 	push(&s, 2);
 	push(&s, 1);
 	display(&s);
+	destroy(&s);
 }
