@@ -21,8 +21,8 @@ pub fn Queue(comptime SIZE: usize) type {
             };
         }
 
-        pub fn deinit(self: Self) !void {
-            try self.allocator.free(self.items);
+        pub fn deinit(self: Self) void {
+            self.allocator.free(self.items);
         }
 
         pub fn enqueue(self: *Self, num: isize) !void {
@@ -33,29 +33,27 @@ pub fn Queue(comptime SIZE: usize) type {
                 return;
             }
             self.rear += 1;
-            self.items[self.rear] = num;
+            self.items[@intCast(self.rear)] = num;
         }
 
+        ///Increments the front instead of shifting operations.
         pub fn dequeue(self: *Self) !isize {
-            if (self.rear == -1) {
+            if (self.front == -1 or self.front > self.rear) {
                 try stdout.writeAll("Empty queue\n");
-                return;
-            } else {
-                const item = self.items[self.front];
-                for (self.items) |i| {
-                    self.items[i] = self.items[i + 1];
-                }
-                self.rear -= 1;
-                return item;
+                return error.Empty;
             }
+            const item = self.items[@intCast(self.front)];
+            self.front += 1;
+            return item;
         }
 
-        pub fn display(self: Self) void {
-            if (self.front == -1 or self.rear == -1 or self.front > self.rear) {
+        pub fn display(self: Self) !void {
+            if (self.front == -1 or self.front > self.rear) {
                 try stdout.writeAll("Nothing to display\n");
             } else {
-                for (self.front..self.rear) |i| {
-                    std.debug.print("{} ", .{self.items[i]});
+                var i: isize = self.front;
+                while (i <= self.rear) : (i += 1) {
+                    print("{} ", .{self.items[@intCast(i)]});
                 }
                 print("\n", .{});
             }
@@ -72,11 +70,11 @@ pub fn main() !void {
     try q.enqueue(1000);
     try q.enqueue(1001);
     try q.enqueue(1002);
-    _ = q.dequeue();
+    _ = try q.dequeue();
     try q.enqueue(1003);
-    _ = q.dequeue();
-    _ = q.dequeue();
+    _ = try q.dequeue();
+    _ = try q.dequeue();
     try q.enqueue(1004);
 
-    q.display();
+    try q.display();
 }
