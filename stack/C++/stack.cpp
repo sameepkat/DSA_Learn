@@ -78,4 +78,6 @@ int main()
 	s.push(2);
 	s.push(1);
 	s.display();
+  std::cout << "Popped: " << s.pop() << std::endl;
+  s.display();
 }

@@ -12,7 +12,7 @@ fn Fibonacci(n: usize) usize {
 }
 
 pub fn main() !void {
-    var n: usize = null;
+    var n: usize = 0;
     try stdout.writeAll("Enter number of terms you want: \n");
     try stdin.read(&n);
     print("You entered {}\n ", .{n});
