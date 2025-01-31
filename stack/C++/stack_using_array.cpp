@@ -56,7 +56,7 @@ int stack::pop()
 	if(isEmpty()){
 		throw std::runtime_error("Stack underflow");
 	}else{
-		item = STACK[item];
+		item = STACK[top];
 		top--;
 		return item;
 	}
@@ -65,9 +65,10 @@ int stack::pop()
 void  stack::display()
 {
 	std::cout << "Items in the stack: \n";
-	while(top!=-1){
-		std::cout << STACK[top] << "\n";
-		top --;
+  int count = top;
+	while(count!=-1){
+		std::cout << STACK[count] << "\n";
+		count --;
 	}
 }
 
